@@ -61,6 +61,57 @@
   --s8: 64px;
 
   --maxw: 1120px;
+
+  /* skeleton shimmer midpoint */
+  --skeleton-mid: #eceee9;
+}
+
+/* ---------------- dark theme ----------------
+   Warm near-black, same quiet technical register as the light theme.
+   Applied via <html data-theme="dark"> (see useTheme + index.html bootstrap). */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* surfaces */
+  --bg: #17181c;
+  --bg-elevated: #1e2025;
+  --bg-sunken: #121316;
+  --bg-hover: #262930;
+
+  /* ink */
+  --ink: #e8e9ec;
+  --ink-soft: #c2c5cc;
+  --ink-mute: #8e939d;
+  --ink-faint: #676d78;
+
+  /* lines */
+  --line: #2a2d34;
+  --line-strong: #373b44;
+
+  /* accent — restrained indigo, lifted for contrast on dark */
+  --accent: #7d88e8;
+  --accent-ink: #9ba4f1;
+  --accent-soft: rgba(125, 136, 232, 0.13);
+  --accent-line: rgba(125, 136, 232, 0.34);
+
+  /* states — same hues, softened */
+  --ok: #5cbd8c;
+  --ok-soft: rgba(92, 189, 140, 0.11);
+  --ok-line: rgba(92, 189, 140, 0.3);
+  --warn: #d0a24e;
+  --warn-soft: rgba(208, 162, 78, 0.11);
+  --warn-line: rgba(208, 162, 78, 0.3);
+  --danger: #d97b72;
+  --danger-soft: rgba(217, 123, 114, 0.11);
+  --danger-line: rgba(217, 123, 114, 0.3);
+  --neutral-soft: #262930;
+  --neutral-line: #373b44;
+
+  /* depth */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 2px 10px rgba(0, 0, 0, 0.4);
+  --skeleton-mid: #23262c;
 }
 
 * { box-sizing: border-box; }
@@ -125,6 +176,8 @@ button { font-family: inherit; cursor: pointer; }
   backdrop-filter: saturate(1.2) blur(8px);
   border-bottom: 1px solid var(--line);
 }
+
+[data-theme="dark"] .site-header { background: rgba(23, 24, 28, 0.92); }
 
 .site-header .wrap {
   display: flex;
@@ -201,6 +254,23 @@ button { font-family: inherit; cursor: pointer; }
 .wallet-btn:hover { border-color: var(--ink-faint); }
 .wallet-btn.connected { border-color: var(--ok-line); background: var(--ok-soft); color: var(--ok); }
 .wallet-btn .addr { font-family: var(--mono); font-size: 12px; }
+
+/* theme toggle — deliberately quiet, never the visual center */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  background: transparent;
+  color: var(--ink-mute);
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--line-strong); background: var(--bg-hover); }
+.theme-toggle svg { display: block; }
 
 /* ---------------- typography ---------------- */
 
@@ -670,7 +740,7 @@ h2.page-title {
 
 .skeleton {
   border-radius: 8px;
-  background: linear-gradient(90deg, var(--bg-sunken) 25%, #eceee9 50%, var(--bg-sunken) 75%);
+  background: linear-gradient(90deg, var(--bg-sunken) 25%, var(--skeleton-mid) 50%, var(--bg-sunken) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }

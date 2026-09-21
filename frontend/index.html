@@ -9,6 +9,19 @@
       content="BountyProof — evidence-based acceptance for software bounties. Predefined GitHub acceptance criteria, on-chain GenLayer adjudication, final decisions recorded in an Intelligent Contract."
     />
     <title>BountyProof — Evidence-based acceptance for software bounties</title>
+    <script>
+      // Apply the theme before first paint to avoid a flash of the wrong scheme.
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem('bountyproof-theme'); } catch (e) {}
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
