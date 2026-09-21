@@ -1,0 +1,26 @@
+# secrets & local env
+.env
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# node
+node_modules/
+frontend/dist/
+
+# data
+data/
+
+# scratch
+.scratch/
+
+# os
+.DS_Store
+
+# local caches, logs & tool caches
+.cache/
+.npm/
+.logs/

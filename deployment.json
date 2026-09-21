@@ -1,0 +1,9 @@
+{
+  "contract_address": "0xe5dbb1c667A0f4d1f9Ff492D23e5Cb93D4cAE9d1",
+  "deploy_tx": "0xb15a9dd7e6c8a90126cf4eb6f8e00cd5597083b9a26608bcc435cf057787f728",
+  "network": "Genlayer Studio Network",
+  "chain_id": 61999,
+  "rpc_url": "https://studio.genlayer.com/api",
+  "deployed_at": "2026-09-21T20:30:40Z",
+  "contract_path": "contracts/bounty_proof.py"
+}
