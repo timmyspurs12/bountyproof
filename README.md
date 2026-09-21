@@ -171,6 +171,28 @@ the GenLayer network to your wallet automatically.
 | `GITHUB_TOKEN` | no | Higher GitHub API rate limits; **never** exposed to the frontend |
 | `BOUNTYPROOF_DB_PATH` | no | SQLite index location |
 
+## Hosting (Render backend + Vercel frontend)
+
+The app splits cleanly: a static frontend and an API with only a small local
+discovery index. No private key is needed at runtime — the API only **reads**
+chain state; users sign writes with their own browser wallet.
+
+**Backend — Render (Web Service):**
+- Root directory: `/` (repository root)
+- Build command: `pip install -r backend/requirements.txt`
+- Start command: `uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
+- Environment: `GENLAYER_NETWORK`, `BOUNTYPROOF_CONTRACT_ADDRESS`, and optionally
+  `GITHUB_TOKEN`. **Do not** set `GENLAYER_PRIVATE_KEY` here.
+- Note: the SQLite discovery index is ephemeral on Render. After a fresh deploy,
+  run `python scripts/reindex_bounties.py https://<backend>.onrender.com` to
+  re-register the existing on-chain bounties (chain-validated, idempotent).
+
+**Frontend — Vercel:**
+- Import the same repo; root directory `frontend/`; framework Vite;
+  build `npm run build`, output `dist`.
+- Add a `vercel.json` at the repo root that proxies API calls to the backend:
+  `{ "rewrites": [{ "source": "/api/:path*", "destination": "https://<backend>.onrender.com/api/:path*" }] }`
+
 ## Example workflow
 
 1. **Create** → `/create`: title, repository URL, task description, individually editable
