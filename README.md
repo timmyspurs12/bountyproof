@@ -171,6 +171,19 @@ the GenLayer network to your wallet automatically.
 | `GITHUB_TOKEN` | no | Higher GitHub API rate limits; **never** exposed to the frontend |
 | `BOUNTYPROOF_DB_PATH` | no | SQLite index location |
 
+### Wallets
+
+"Connect wallet" opens a chooser that lists every installed browser-extension wallet
+individually (discovered via EIP-6963 — MetaMask, Rabby, Zerion, Coinbase, …) plus
+**WalletConnect** for mobile and non-extension wallets. The selection is remembered and
+silently restored on reload (never prompts). All signing goes through the chosen provider;
+the backend never holds keys.
+
+WalletConnect uses a Cloud project ID (a public identifier). The default is baked in; override
+with `VITE_WALLETCONNECT_PROJECT_ID` at build time if you fork the project. In the WalletConnect
+Cloud dashboard, add your production origin (e.g. `https://<your-site>.vercel.app`) to the
+project's allowed domains.
+
 ## Hosting (Render backend + Vercel frontend)
 
 The app splits cleanly: a static frontend and an API with only a small local

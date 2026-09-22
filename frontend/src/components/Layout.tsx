@@ -4,7 +4,8 @@ import { api } from '../lib/api';
 import { truncateAddress } from '../lib/format';
 import type { AppConfig } from '../lib/types';
 import { useConfig, useWallet } from '../hooks/useWallet';
-import type { WalletState } from '../hooks/useWallet';
+import type { WalletApi } from '../hooks/useWallet';
+import { WalletChooser } from './WalletChooser';
 import { useTheme } from '../hooks/useTheme';
 
 /** BountyProof geometric mark: a check whose stem is a document edge,
@@ -87,13 +88,13 @@ function ThemeToggle() {
   );
 }
 
-function WalletButton({ wallet }: { wallet: WalletState & { connect: () => Promise<void>; disconnect: () => void } }) {
+function WalletButton({ wallet }: { wallet: WalletApi }) {
   if (wallet.address) {
     return (
       <button
         className="wallet-btn connected"
         onClick={wallet.disconnect}
-        title="Connected. Click to disconnect."
+        title={`Connected via ${wallet.walletName || 'wallet'}. Click to disconnect.`}
       >
         <span className="addr">{truncateAddress(wallet.address)}</span>
       </button>
@@ -139,6 +140,7 @@ export function Layout() {
             <ThemeToggle />
             <NetworkPill config={config} />
             <WalletButton wallet={wallet} />
+            <WalletChooser wallet={wallet} />
             <button
               className="wallet-btn menu-toggle"
               aria-label="Toggle navigation"

@@ -1,5 +1,7 @@
 import { chains, createClient } from 'genlayer-js';
 import type { AppConfig } from './types';
+import { getActiveProvider, hasInjectedWallet } from './wallet';
+import type { EIP1193Provider } from './wallet';
 
 declare global {
   interface Window {
@@ -10,32 +12,33 @@ declare global {
 let cachedClient: any = null;
 let cachedAddress: string | null = null;
 
+/** True when a browser-extension wallet is present (WalletConnect is always available). */
 export function hasWalletProvider(): boolean {
-  return typeof window !== 'undefined' && !!window.ethereum;
+  return hasInjectedWallet();
+}
+
+/** The provider the user picked in the wallet chooser; throws if none is connected. */
+function provider(): EIP1193Provider {
+  const p = getActiveProvider();
+  if (!p) throw new Error('No wallet connected. Use "Connect wallet" and pick a wallet first.');
+  return p;
 }
 
 function hexChainId(id: number): string {
   return '0x' + id.toString(16);
 }
 
-export async function requestAccounts(): Promise<string> {
-  if (!window.ethereum) throw new Error('No wallet provider found in this browser.');
-  const accounts: string[] = await window.ethereum.request({ method: 'eth_requestAccounts' });
-  if (!accounts || accounts.length === 0) throw new Error('Wallet returned no accounts.');
-  return accounts[0];
-}
-
 /** Add the GenLayer network to the wallet if missing, then switch to it. */
 export async function ensureChain(cfg: AppConfig): Promise<void> {
-  if (!window.ethereum) throw new Error('No wallet provider found in this browser.');
+  const eth = provider();
   const target = hexChainId(cfg.network.chain_id);
-  const current = await window.ethereum
+  const current = await eth
     .request({ method: 'eth_chainId' })
     .catch(() => null);
   if (current === target) return;
 
   try {
-    await window.ethereum.request({
+    await eth.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: target }],
     });
@@ -50,7 +53,7 @@ export async function ensureChain(cfg: AppConfig): Promise<void> {
     }
   }
 
-  await window.ethereum.request({
+  await eth.request({
     method: 'wallet_addEthereumChain',
     params: [
       {
@@ -93,7 +96,9 @@ export function getClient(cfg: AppConfig, address: string) {
   if (cfg.network.rpc_url) {
     chain = { ...chain, rpcUrls: { default: { http: [cfg.network.rpc_url] } } };
   }
-  cachedClient = createClient({ chain, account: address as any });
+  // `provider` routes eth_requestAccounts / eth_sendTransaction / personal_sign to the
+  // wallet the user chose (extension or WalletConnect) instead of window.ethereum.
+  cachedClient = createClient({ chain, account: address as any, provider: provider() as any });
   cachedAddress = address;
   return cachedClient;
 }

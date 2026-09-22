@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { api, ApiError } from '../lib/api';
-import { hasWalletProvider, writeContract } from '../lib/genlayer';
+import { writeContract } from '../lib/genlayer';
 import type { AppConfig } from '../lib/types';
 import { fmtDate, repoSlug } from '../lib/format';
-import type { WalletState } from '../hooks/useWallet';
+import type { WalletApi } from '../hooks/useWallet';
 import { CriteriaPreview } from '../components/Criteria';
 
 interface Ctx {
   config: AppConfig | null;
   cfgLoading: boolean;
-  wallet: WalletState & { connect: () => Promise<void>; disconnect: () => void };
+  wallet: WalletApi;
 }
 
 function defaultDeadline(): number {
@@ -274,19 +274,13 @@ export function Create() {
 
             {!wallet.address && (
               <div className="callout" style={{ marginBottom: 16 }}>
-                {hasWalletProvider() ? (
-                  <span>
-                    A wallet is needed to sign the publish transaction.{' '}
-                    <button className="btn btn-secondary btn-sm" onClick={wallet.connect} style={{ marginLeft: 8 }}>
-                      {wallet.connecting ? 'Connecting…' : 'Connect wallet'}
-                    </button>
-                  </span>
-                ) : (
-                  <span>
-                    No wallet provider detected. Install MetaMask (or similar) and reload —
-                    the publish transaction must be signed by your wallet.
-                  </span>
-                )}
+                <span>
+                  A wallet is needed to sign the publish transaction — a browser extension or any
+                  mobile wallet via WalletConnect.{' '}
+                  <button className="btn btn-secondary btn-sm" onClick={wallet.connect} style={{ marginLeft: 8 }}>
+                    {wallet.connecting ? 'Connecting…' : 'Connect wallet'}
+                  </button>
+                </span>
               </div>
             )}
 

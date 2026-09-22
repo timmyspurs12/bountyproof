@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { writeContract } from '../lib/genlayer';
 import type { AppConfig, BountyDetail } from '../lib/types';
 import { prNumber, repoSlug, voteCounts } from '../lib/format';
-import type { WalletState } from '../hooks/useWallet';
+import type { WalletApi } from '../hooks/useWallet';
 import { useTxLifecycle } from '../components/Lifecycle';
 import type { Step } from '../components/Lifecycle';
 import { CriteriaList } from '../components/Criteria';
@@ -15,7 +15,7 @@ import type { EvidencePreview } from '../lib/types';
 interface Ctx {
   config: AppConfig | null;
   cfgLoading: boolean;
-  wallet: WalletState & { connect: () => Promise<void>; disconnect: () => void };
+  wallet: WalletApi;
 }
 
 const STAGE_NAMES = ['READING AGREEMENT', 'COLLECTING EVIDENCE', 'EVALUATING CRITERIA', 'GENLAYER CONSENSUS', 'FINALIZED'];

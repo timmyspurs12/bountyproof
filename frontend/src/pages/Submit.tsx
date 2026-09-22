@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { writeContract } from '../lib/genlayer';
 import type { AppConfig, BountyDetail, EvidencePreview } from '../lib/types';
 import { prNumber, repoSlug } from '../lib/format';
-import type { WalletState } from '../hooks/useWallet';
+import type { WalletApi } from '../hooks/useWallet';
 import { GitHubSnapshot } from '../components/EvidencePanel';
 import { useTxLifecycle } from '../components/Lifecycle';
 import type { Step } from '../components/Lifecycle';
@@ -12,7 +12,7 @@ import type { Step } from '../components/Lifecycle';
 interface Ctx {
   config: AppConfig | null;
   cfgLoading: boolean;
-  wallet: WalletState & { connect: () => Promise<void>; disconnect: () => void };
+  wallet: WalletApi;
 }
 
 export function Submit() {

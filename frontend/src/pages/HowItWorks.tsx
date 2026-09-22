@@ -1,11 +1,11 @@
 import { Link, useOutletContext } from 'react-router-dom';
 import type { AppConfig } from '../lib/types';
-import type { WalletState } from '../hooks/useWallet';
+import type { WalletApi } from '../hooks/useWallet';
 
 interface Ctx {
   config: AppConfig | null;
   cfgLoading: boolean;
-  wallet: WalletState & { connect: () => Promise<void>; disconnect: () => void };
+  wallet: WalletApi;
 }
 
 export function HowItWorks() {

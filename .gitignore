@@ -24,3 +24,8 @@ data/
 .cache/
 .npm/
 .logs/
+
+# sandbox/system artifacts
+.pki/
+.sudo_as_admin_successful
+uploads/

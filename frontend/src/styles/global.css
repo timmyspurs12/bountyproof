@@ -796,3 +796,122 @@ h2.page-title {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Wallet chooser (modal) — same restrained language as the rest of the UI
+   --------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s4);
+  background: rgba(20, 24, 33, 0.42);
+  backdrop-filter: blur(2px);
+  animation: modal-fade 140ms ease-out;
+}
+[data-theme="dark"] .modal-backdrop { background: rgba(0, 0, 0, 0.58); }
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: 0 16px 48px rgba(20, 24, 33, 0.18), var(--shadow-2);
+  padding: var(--s5);
+  animation: modal-rise 160ms ease-out;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+.modal-head h2 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.modal-sub { margin: var(--s2) 0 var(--s4); font-size: 13px; color: var(--ink-mute); line-height: 1.5; }
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--r-btn);
+  background: transparent;
+  color: var(--ink-mute);
+  cursor: pointer;
+}
+.icon-btn:hover { color: var(--ink); background: var(--bg-hover); border-color: var(--line); }
+
+.wallet-group + .wallet-group { margin-top: var(--s4); }
+.wallet-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--s2);
+}
+.wallet-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  background: var(--bg-elevated);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.wallet-row:first-of-type { margin-top: 0; }
+.wallet-row:hover:not(:disabled) { border-color: var(--accent-line); background: var(--accent-soft); }
+.wallet-row:disabled { cursor: default; opacity: 0.7; }
+.wallet-row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 8px;
+  background: var(--bg-sunken);
+  color: var(--ink-mute);
+  overflow: hidden;
+}
+.wallet-row-icon img { width: 22px; height: 22px; display: block; }
+.wallet-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.wallet-row-name { font-size: 14px; font-weight: 500; }
+.wallet-row-hint { font-size: 12px; color: var(--ink-mute); }
+.wallet-row-state { font-size: 12px; color: var(--accent-ink); white-space: nowrap; }
+.wallet-empty {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--ink-mute);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-btn);
+  line-height: 1.5;
+}
+.wallet-error {
+  margin-top: var(--s4);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r-btn);
+}
+
+@keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop, .modal { animation: none; }
+}

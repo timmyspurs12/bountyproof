@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { AppConfig } from '../lib/types';
-import type { WalletState } from '../hooks/useWallet';
+import type { WalletApi } from '../hooks/useWallet';
 import { useTxLifecycle } from '../components/Lifecycle';
 import type { Step } from '../components/Lifecycle';
 
 interface Ctx {
   config: AppConfig | null;
   cfgLoading: boolean;
-  wallet: WalletState & { connect: () => Promise<void>; disconnect: () => void };
+  wallet: WalletApi;
 }
 
 /**
