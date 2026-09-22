@@ -47,7 +47,12 @@ export function NewBounty() {
     (async () => {
       try {
         const { bounty_id } = await api.findBounty(addr, title, deadline);
-        if (!bounty_id) throw new Error('Bounty not found on contract after accepted transaction');
+        if (!bounty_id) {
+          throw new Error(
+            'The transaction was accepted but the bounty could not be located by creator/title/deadline yet. ' +
+              'Open "Bounties" — it is listed there once the node has caught up.'
+          );
+        }
         await api.indexBounty(bounty_id, tx!.hash, title).catch(() => undefined);
         navigate(`/bounties/${bounty_id}`, { replace: true });
       } catch (e: any) {

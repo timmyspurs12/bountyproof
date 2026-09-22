@@ -17,6 +17,7 @@ import time
 from contextlib import asynccontextmanager
 from typing import Any, Optional
 
+from eth_utils import to_checksum_address
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -310,6 +311,9 @@ def find_bounty(
     except RuntimeError as err:
         raise HTTPException(status_code=503, detail=str(err))
     c = client()
+    # The contract stores creators as EIP-55 checksummed strings and compares
+    # literally; wallets (WalletConnect, some extensions) often return lowercase.
+    creator = to_checksum_address(creator)
     try:
         bid = with_retries(
             lambda: c.read_contract(
