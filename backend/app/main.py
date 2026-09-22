@@ -12,6 +12,7 @@ from contract state only.
 """
 from __future__ import annotations
 
+import os
 import time
 from contextlib import asynccontextmanager
 from typing import Any, Optional
@@ -22,6 +23,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from . import db
+from .seed import seed_in_background
 from .config import deployment_record, explorer_base, network_name
 from .evidence import EvidenceError, fetch_pr_evidence, fetch_repository
 from .genlayer import (
@@ -59,6 +61,13 @@ async def lifespan(_: FastAPI):
         _state["chain"] = _state["client"].chain
     except Exception as err:  # surface at /api/health, do not crash boot
         _state["client_error"] = str(err)
+    # Ephemeral-disk hosts lose the SQLite index on restart; re-register the known
+    # on-chain bounties (chain-verified) so the dashboard is never silently empty.
+    if _state.get("client") is not None and os.environ.get("BOUNTYPROOF_SEED", "1") != "0":
+        try:
+            seed_in_background(_state["client"], contract_address())
+        except RuntimeError:
+            pass  # no contract configured — nothing to seed
     yield
 
 

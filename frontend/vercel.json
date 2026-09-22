@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://bountyproof-g3ff.onrender.com/api/:path*"
+    },
+    {
+      "source": "/((?!assets/|favicon).*)",
+      "destination": "/index.html"
     }
   ]
 }
