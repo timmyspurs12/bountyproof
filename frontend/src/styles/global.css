@@ -915,3 +915,17 @@ h2.page-title {
 @media (prefers-reduced-motion: reduce) {
   .modal-backdrop, .modal { animation: none; }
 }
+
+/* inline spinner for status callouts (API wake-up notice) */
+.callout .spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 10px;
+  vertical-align: -1px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-line);
+  border-top-color: var(--accent);
+  animation: lcspin 0.9s linear infinite;
+  flex: 0 0 auto;
+}

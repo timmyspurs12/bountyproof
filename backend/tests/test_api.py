@@ -136,12 +136,33 @@ def test_validate_bounty_field_error(client):
     assert body["error"]["field"] == "title"
 
 
-def test_bounties_list_contract_source(client):
+def test_bounties_list_is_contract_authoritative(client):
+    # The list comes from the contract's get_all_bounties, even with an EMPTY
+    # index: a bounty can never be missing because an index step failed or the
+    # host's disk was wiped. Regression for the "0 bounties after restart" and
+    # "created bounty not listed" reviewer-facing failures.
     r = client.get("/api/bounties")
     assert r.status_code == 200
     body = r.json()
     assert body["contract_ok"] is True
-    assert body["metrics"]["resolved"] == 0  # index empty in test db
+    ids = [i["bounty"]["id"] for i in body["items"]]
+    assert ids == ["7"]
+    assert body["metrics"]["resolved"] == 1
+    assert body["metrics"]["accepted"] == 1
+    # no tx enrichment available yet -> honest nulls, not fabricated hashes
+    assert body["items"][0]["create_tx"] is None
+    assert body["items"][0]["txs"] == []
+
+
+def test_bounties_list_enriches_with_indexed_txs(client):
+    db.upsert_bounty(7, "0x" + "a" * 64, "0x" + "c" * 40, "Test bounty", "2026-01-01T00:00:00Z")
+    db.record_tx("0x" + "a" * 64, 7, "create", "2026-01-01T00:00:00Z")
+    db.record_tx("0x" + "b" * 64, 7, "evaluate", "2026-01-01T00:00:00Z")
+    body = client.get("/api/bounties").json()
+    item = body["items"][0]
+    assert item["bounty"]["id"] == "7"
+    assert item["create_tx"] == "0x" + "a" * 64
+    assert sorted(t["kind"] for t in item["txs"]) == ["create", "evaluate"]
 
 
 def test_index_bounty_rejects_unknown_tx(client):
@@ -152,22 +173,33 @@ def test_index_bounty_rejects_unknown_tx(client):
     assert r.status_code == 404
 
 
-def test_bounties_list_marks_stale_deployment_rows(client):
-    # A row indexed under a different contract (previous deployment) must be
-    # surfaced as stale, never read from the live contract, never counted.
+def test_bounties_list_ignores_rows_from_other_deployments(client):
+    # A row indexed under a different contract (previous deployment) can neither
+    # appear in the list nor be read from the live contract nor affect metrics:
+    # the live contract alone decides what exists.
     db.upsert_bounty(
         9, "0x" + "3" * 64, "0x" + "d" * 40, "Old deployment bounty", "2026-01-01T00:00:00Z"
     )
     r = client.get("/api/bounties")
     assert r.status_code == 200
     body = r.json()
-    stale = [i for i in body["items"] if i.get("stale_deployment")]
-    assert len(stale) == 1
-    assert stale[0]["bounty_id"] == 9
-    assert stale[0]["title"] == "Old deployment bounty"
-    assert body["contract_ok"] is True  # stale rows are not contract failures
-    assert body["metrics"]["resolved"] == 0  # stale rows never counted
-    assert not any(i.get("contract_read_error") for i in body["items"])
+    assert [i["bounty"]["id"] for i in body["items"]] == ["7"]
+    assert not any(i.get("stale_deployment") or i.get("contract_read_error") for i in body["items"])
+    assert body["contract_ok"] is True
+    assert body["metrics"]["resolved"] == 1
+
+
+def test_bounties_list_reports_contract_failure_honestly(client, monkeypatch):
+    # If the chain read fails, do not return an empty "all good" page: surface
+    # contract_ok=false and the indexed rows tagged with the error.
+    db.upsert_bounty(7, "0x" + "a" * 64, "0x" + "c" * 40, "Test bounty", "2026-01-01T00:00:00Z")
+    monkeypatch.setattr(main_mod, "read_all_bounties", lambda c, a: (_ for _ in ()).throw(RuntimeError("rpc down")))
+    monkeypatch.setattr(main_mod, "_cache", {})
+    body = client.get("/api/bounties").json()
+    assert body["contract_ok"] is False
+    assert body["items"][0]["bounty_id"] == 7
+    assert "rpc down" in body["items"][0]["contract_read_error"]
+    assert body["metrics"]["resolved"] == 0
 
 
 def test_index_bounty_accepts_known_tx(client):

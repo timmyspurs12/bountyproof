@@ -238,40 +238,40 @@ def evidence_preview(req: EvidencePreviewRequest):
 
 @app.get("/api/bounties")
 def list_bounties():
-    """Dashboard list. Contract state is authoritative; the index provides discovery."""
+    """Dashboard list.
+
+    The contract is the single source of truth: every bounty it holds is listed,
+    in one `get_all_bounties` read. The SQLite index only *enriches* rows with the
+    create/submit/evaluate tx hashes it knows about (for explorer links); it can
+    never add, hide or reorder a bounty. If the contract read fails, the indexed
+    rows are returned with `contract_read_error` so the UI shows an honest error
+    instead of an empty page.
+    """
     try:
         address = contract_address()
     except RuntimeError as err:
         raise HTTPException(status_code=503, detail=str(err))
     c = client()
-    rows = db.list_bounties()
-    items = []
+    rows = {int(r["bounty_id"]): r for r in db.list_bounties() if str(r.get("contract", "")).lower() == address.lower()}
+
     contract_ok = True
-    for row in rows:
-        if str(row.get("contract", "")).lower() != address.lower():
-            # Indexed on a previous contract deployment. Do not read it from the
-            # live contract (its ids belong to a different deployment); surface it
-            # as stale so the UI can de-emphasise it instead of erroring.
-            items.append({
-                **row,
-                "stale_deployment": True,
-                "note": "Indexed on a different contract deployment; not part of the current network.",
-            })
-            continue
-        try:
-            bounty = cached(
-                f"bounty:{row['bounty_id']}",
-                lambda bid=row["bounty_id"]: read_bounty(c, address, bid),
-            )
-        except Exception as err:
-            contract_ok = False
-            items.append({**row, "contract_read_error": str(err)[:200]})
-            continue
-        txs = db.txs_for_bounty(row["bounty_id"])
+    items: list[dict[str, Any]] = []
+    try:
+        bounties = cached("all_bounties", lambda: read_all_bounties(c, address))
+    except Exception as err:
+        contract_ok = False
+        text = str(err)[:200]
+        for bid, row in sorted(rows.items(), reverse=True):
+            items.append({**row, "contract_read_error": text})
+        bounties = []
+
+    for bounty in sorted(bounties, key=lambda b: int(b.get("id", 0)), reverse=True):
+        bid = int(bounty.get("id", 0))
+        row = rows.get(bid)
         items.append({
             "bounty": bounty,
-            "create_tx": row["create_tx"],
-            "txs": txs,
+            "create_tx": row["create_tx"] if row else None,
+            "txs": db.txs_for_bounty(bid),
         })
 
     metrics = {"active": 0, "evaluating": 0, "resolved": 0, "accepted": 0, "rejected": 0, "inconclusive": 0}

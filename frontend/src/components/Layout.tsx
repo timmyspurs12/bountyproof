@@ -108,7 +108,23 @@ function WalletButton({ wallet }: { wallet: WalletApi }) {
 }
 
 export function Layout() {
-  const { config, loading: cfgLoading, error: cfgError } = useConfig();
+  const { config, loading: cfgLoading, error: cfgError, reload } = useConfig();
+  // Free-tier API hosting sleeps when idle; the first request after a nap can take
+  // 30-60 s. Say so instead of leaving a blank page, and retry automatically.
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!cfgLoading) {
+      setSlow(false);
+      return;
+    }
+    const t = setTimeout(() => setSlow(true), 3000);
+    return () => clearTimeout(t);
+  }, [cfgLoading]);
+  useEffect(() => {
+    if (!cfgError) return;
+    const t = setTimeout(reload, 8000);
+    return () => clearTimeout(t);
+  }, [cfgError, reload]);
   const wallet = useWallet(config);
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -167,10 +183,26 @@ export function Layout() {
           </div>
         </div>
       )}
+      {cfgLoading && slow && (
+        <div className="wrap" style={{ paddingTop: 12 }}>
+          <div className="callout" role="status" aria-live="polite">
+            <span className="spinner" aria-hidden="true" />
+            <span>
+              Waking up the API — it runs on free hosting and sleeps when idle. This usually takes
+              under a minute; the page fills in automatically.
+            </span>
+          </div>
+        </div>
+      )}
       {cfgError && (
         <div className="wrap" style={{ paddingTop: 12 }}>
           <div className="callout error" role="alert">
-            <span>Backend unreachable: {cfgError}. The API must be running and reachable at /api.</span>
+            <span>
+              Backend unreachable: {cfgError}. Retrying automatically…{' '}
+              <button className="btn btn-secondary btn-sm" onClick={reload} style={{ marginLeft: 8 }}>
+                Retry now
+              </button>
+            </span>
           </div>
         </div>
       )}
